@@ -2,6 +2,7 @@
 const { containerClient, generateSASUrl } = require("../config/azureBlobConfig");
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
+const axios = require('axios');
 
 // Set up Multer for file uploads (memory storage)
 const storage = multer.memoryStorage();
@@ -330,9 +331,15 @@ exports.downloadFile = async (req, res) => {
       // Ensure the SAS URL is using HTTPS
       const secureSasUrl = sasUrl.replace('http://', 'https://');
 
-      // Redirect with a Content-Disposition header to force download
-      res.setHeader('Content-Disposition', 'attachment; filename="' + blobName + '"');
-      res.redirect(secureSasUrl); // This will trigger the download in the browser
+      // Fetch the file using the SAS URL
+      const fileResponse = await axios.get(secureSasUrl, { responseType: 'arraybuffer' });
+
+      // Set the headers to force download
+      res.setHeader('Content-Disposition', `attachment; filename="${blobName}"`);
+      res.setHeader('Content-Type', fileResponse.headers['content-type']); // Use the actual file content type
+
+      // Send the file as the response
+      res.send(fileResponse.data);
   } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to download file" });
