@@ -1,12 +1,10 @@
-// app.js
 const express = require("express");
 const dotenv = require("dotenv");
 const fileRoutes = require("./routes/fileRoutes");
-
-dotenv.config(); // Load environment variables
 const cors = require('cors');
 
-
+// Load environment variables
+dotenv.config();
 
 const app = express();
 
@@ -21,11 +19,9 @@ app.use(cors({
 // Use file routes
 app.use("/api/files", fileRoutes);
 app.get("/", (req, res) => {
-  res.send("Jai Shri Ram ji");
+  res.status(200).send("Jai Shri Ram ji");
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+
+// Export the app for Vercel serverless deployment
+module.exports = app;
