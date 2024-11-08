@@ -204,69 +204,69 @@ exports.retrieveText = async (req, res) => {
 //   }
 // };
 
-exports.downloadFile = async (req, res) => {
-  const { code } = req.params;
-
-  try {
-    // List all blobs in the container to find the blob with the matching code
-    const blobs = containerClient.listBlobsFlat();
-    let blobName = null;
-
-    for await (const blob of blobs) {
-      if (blob.name.startsWith(`${code}-`)) {
-        blobName = blob.name;
-        break;
-      }
-    }
-
-    if (!blobName) {
-      return res.status(404).json({ error: "File not found" });
-    }
-
-    // Generate the SAS URL for the file
-    const sasUrl = generateSASUrl(blobName);
-
-    // Redirect to the SAS URL (for the browser to handle the download directly)
-    res.redirect(sasUrl); // This will initiate a download from the Azure storage directly
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to download file" });
-  }
-};
-
 // exports.downloadFile = async (req, res) => {
 //   const { code } = req.params;
 
 //   try {
-//     // Find the blob with the matching code
-//     for await (const blob of containerClient.listBlobsFlat()) {
+//     // List all blobs in the container to find the blob with the matching code
+//     const blobs = containerClient.listBlobsFlat();
+//     let blobName = null;
+
+//     for await (const blob of blobs) {
 //       if (blob.name.startsWith(`${code}-`)) {
-//         // Use the SAS URL internally to access the blob
-//         const sasUrl = generateSASUrl(blob.name);
-        
-//         // Fetch the file from Azure Blob Storage
-//         const response = await fetch(sasUrl);
-        
-//         if (!response.ok) {
-//           return res.status(500).json({ error: "Failed to download file" });
-//         }
-
-//         // Set headers to prompt download
-//         res.setHeader("Content-Disposition", `attachment; filename="${blob.name}"`);
-//         res.setHeader("Content-Type", response.headers.get("Content-Type"));
-
-//         // Pipe the file stream from Azure to the response
-//         response.body.pipe(res);
-//         return;
+//         blobName = blob.name;
+//         break;
 //       }
 //     }
 
-//     res.status(404).json({ error: "File not found" });
+//     if (!blobName) {
+//       return res.status(404).json({ error: "File not found" });
+//     }
+
+//     // Generate the SAS URL for the file
+//     const sasUrl = generateSASUrl(blobName);
+
+//     // Redirect to the SAS URL (for the browser to handle the download directly)
+//     res.redirect(sasUrl); // This will initiate a download from the Azure storage directly
 //   } catch (error) {
 //     console.error(error);
 //     res.status(500).json({ error: "Failed to download file" });
 //   }
 // };
+
+exports.downloadFile = async (req, res) => {
+  const { code } = req.params;
+
+  try {
+    // Find the blob with the matching code
+    for await (const blob of containerClient.listBlobsFlat()) {
+      if (blob.name.startsWith(`${code}-`)) {
+        // Use the SAS URL internally to access the blob
+        const sasUrl = generateSASUrl(blob.name);
+        
+        // Fetch the file from Azure Blob Storage
+        const response = await fetch(sasUrl);
+        
+        if (!response.ok) {
+          return res.status(500).json({ error: "Failed to download file" });
+        }
+
+        // Set headers to prompt download
+        res.setHeader("Content-Disposition", `attachment; filename="${blob.name}"`);
+        res.setHeader("Content-Type", response.headers.get("Content-Type"));
+
+        // Pipe the file stream from Azure to the response
+        response.body.pipe(res);
+        return;
+      }
+    }
+
+    res.status(404).json({ error: "File not found" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to download file" });
+  }
+};
 
 // controllers/fileController.js
 
