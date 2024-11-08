@@ -131,7 +131,7 @@ export default function Retrieve() {
 
   const handleDownload = () => {
     if (content?.downloadUrl) {
-      window.location.href = content.downloadUrl;
+      window.open(content.downloadUrl, '_blank');  // Open in a new tab
       toast.success('Download started');
     }
   };
