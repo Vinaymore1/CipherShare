@@ -272,6 +272,39 @@ exports.retrieveText = async (req, res) => {
 
   
 // Download file from Azure Blob Storage
+// exports.downloadFile = async (req, res) => {
+//   const { code } = req.params;
+
+//   try {
+//       // List all blobs in the container to find the blob with the matching code
+//       const blobs = containerClient.listBlobsFlat();
+//       let blobName = null;
+
+//       for await (const blob of blobs) {
+//           if (blob.name.startsWith(`${code}-`)) {
+//               blobName = blob.name;
+//               break;
+//           }
+//       }
+
+//       if (!blobName) {
+//           return res.status(404).json({ error: "File not found" });
+//       }
+
+//       // Generate the SAS URL for the file
+//       const sasUrl = generateSASUrl(blobName);
+
+//       // Ensure the SAS URL is using HTTPS
+//       const secureSasUrl = sasUrl.replace('http://', 'https://');
+
+//       // Redirect to the secure SAS URL (for the browser to handle the download directly)
+//       res.redirect(secureSasUrl); // This will initiate a download from the Azure storage directly
+//   } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ error: "Failed to download file" });
+//   }
+// };
+
 exports.downloadFile = async (req, res) => {
   const { code } = req.params;
 
@@ -297,13 +330,15 @@ exports.downloadFile = async (req, res) => {
       // Ensure the SAS URL is using HTTPS
       const secureSasUrl = sasUrl.replace('http://', 'https://');
 
-      // Redirect to the secure SAS URL (for the browser to handle the download directly)
-      res.redirect(secureSasUrl); // This will initiate a download from the Azure storage directly
+      // Redirect with a Content-Disposition header to force download
+      res.setHeader('Content-Disposition', 'attachment; filename="' + blobName + '"');
+      res.redirect(secureSasUrl); // This will trigger the download in the browser
   } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to download file" });
   }
 };
+
 
 // Export Multer middleware for file upload
 exports.upload = upload.single("file"); // Single file upload (adjust field name as necessary)
