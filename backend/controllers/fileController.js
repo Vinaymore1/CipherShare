@@ -68,7 +68,8 @@ exports.retrieveFile = async (req, res) => {
       }
   
       // Instead of returning SAS URL, provide a download route
-      const downloadUrl = `${req.protocol}://${req.get("host")}/api/files/download/${code}`;
+      const downloadUrl = `https://${req.get("host")}/api/files/download/${code}`;
+
       
       res.json({ code, downloadUrl });
     } catch (error) {
@@ -202,35 +203,35 @@ exports.retrieveText = async (req, res) => {
 //   }
 // };
 
-exports.downloadFile = async (req, res) => {
-  const { code } = req.params;
+// exports.downloadFile = async (req, res) => {
+//   const { code } = req.params;
 
-  try {
-    // List all blobs in the container to find the blob with the matching code
-    const blobs = containerClient.listBlobsFlat();
-    let blobName = null;
+//   try {
+//     // List all blobs in the container to find the blob with the matching code
+//     const blobs = containerClient.listBlobsFlat();
+//     let blobName = null;
 
-    for await (const blob of blobs) {
-      if (blob.name.startsWith(`${code}-`)) {
-        blobName = blob.name;
-        break;
-      }
-    }
+//     for await (const blob of blobs) {
+//       if (blob.name.startsWith(`${code}-`)) {
+//         blobName = blob.name;
+//         break;
+//       }
+//     }
 
-    if (!blobName) {
-      return res.status(404).json({ error: "File not found" });
-    }
+//     if (!blobName) {
+//       return res.status(404).json({ error: "File not found" });
+//     }
 
-    // Generate the SAS URL for the file
-    const sasUrl = generateSASUrl(blobName);
+//     // Generate the SAS URL for the file
+//     const sasUrl = generateSASUrl(blobName);
 
-    // Redirect to the SAS URL (for the browser to handle the download directly)
-    res.redirect(sasUrl); // This will initiate a download from the Azure storage directly
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to download file" });
-  }
-};
+//     // Redirect to the SAS URL (for the browser to handle the download directly)
+//     res.redirect(sasUrl); // This will initiate a download from the Azure storage directly
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Failed to download file" });
+//   }
+// };
 
 // exports.downloadFile = async (req, res) => {
 //   const { code } = req.params;
@@ -268,43 +269,41 @@ exports.downloadFile = async (req, res) => {
 
 // controllers/fileController.js
 
-exports.downloadFile = async (req, res) => {
-    const { code } = req.params;
+
   
-    try {
+// Download file from Azure Blob Storage
+exports.downloadFile = async (req, res) => {
+  const { code } = req.params;
+
+  try {
       // List all blobs in the container to find the blob with the matching code
       const blobs = containerClient.listBlobsFlat();
       let blobName = null;
-  
+
       for await (const blob of blobs) {
-        if (blob.name.startsWith(`${code}-`)) {
-          blobName = blob.name;
-          break;
-        }
+          if (blob.name.startsWith(`${code}-`)) {
+              blobName = blob.name;
+              break;
+          }
       }
-  
+
       if (!blobName) {
-        return res.status(404).json({ error: "File not found" });
+          return res.status(404).json({ error: "File not found" });
       }
-  
-      // Create a client to download the blob as a stream
-      const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-      const downloadBlockBlobResponse = await blockBlobClient.download(0);
-  
-      // Set the response headers to prompt for download
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${blobName.split("-")[1]}"`
-      );
-      res.setHeader("Content-Type", downloadBlockBlobResponse.contentType);
-  
-      // Pipe the blob stream to the response
-      downloadBlockBlobResponse.readableStreamBody.pipe(res);
-    } catch (error) {
+
+      // Generate the SAS URL for the file
+      const sasUrl = generateSASUrl(blobName);
+
+      // Ensure the SAS URL is using HTTPS
+      const secureSasUrl = sasUrl.replace('http://', 'https://');
+
+      // Redirect to the secure SAS URL (for the browser to handle the download directly)
+      res.redirect(secureSasUrl); // This will initiate a download from the Azure storage directly
+  } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to download file" });
-    }
-  };
-  
+  }
+};
+
 // Export Multer middleware for file upload
 exports.upload = upload.single("file"); // Single file upload (adjust field name as necessary)
