@@ -2,7 +2,7 @@
 const { containerClient, generateSASUrl } = require("../config/azureBlobConfig");
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
-const axios = require('axios');
+
 
 // Set up Multer for file uploads (memory storage)
 const storage = multer.memoryStorage();
@@ -204,35 +204,35 @@ exports.retrieveText = async (req, res) => {
 //   }
 // };
 
-// exports.downloadFile = async (req, res) => {
-//   const { code } = req.params;
+exports.downloadFile = async (req, res) => {
+  const { code } = req.params;
 
-//   try {
-//     // List all blobs in the container to find the blob with the matching code
-//     const blobs = containerClient.listBlobsFlat();
-//     let blobName = null;
+  try {
+    // List all blobs in the container to find the blob with the matching code
+    const blobs = containerClient.listBlobsFlat();
+    let blobName = null;
 
-//     for await (const blob of blobs) {
-//       if (blob.name.startsWith(`${code}-`)) {
-//         blobName = blob.name;
-//         break;
-//       }
-//     }
+    for await (const blob of blobs) {
+      if (blob.name.startsWith(`${code}-`)) {
+        blobName = blob.name;
+        break;
+      }
+    }
 
-//     if (!blobName) {
-//       return res.status(404).json({ error: "File not found" });
-//     }
+    if (!blobName) {
+      return res.status(404).json({ error: "File not found" });
+    }
 
-//     // Generate the SAS URL for the file
-//     const sasUrl = generateSASUrl(blobName);
+    // Generate the SAS URL for the file
+    const sasUrl = generateSASUrl(blobName);
 
-//     // Redirect to the SAS URL (for the browser to handle the download directly)
-//     res.redirect(sasUrl); // This will initiate a download from the Azure storage directly
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Failed to download file" });
-//   }
-// };
+    // Redirect to the SAS URL (for the browser to handle the download directly)
+    res.redirect(sasUrl); // This will initiate a download from the Azure storage directly
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to download file" });
+  }
+};
 
 // exports.downloadFile = async (req, res) => {
 //   const { code } = req.params;
@@ -306,45 +306,7 @@ exports.retrieveText = async (req, res) => {
 //   }
 // };
 
-exports.downloadFile = async (req, res) => {
-  const { code } = req.params;
 
-  try {
-      // List all blobs in the container to find the blob with the matching code
-      const blobs = containerClient.listBlobsFlat();
-      let blobName = null;
-
-      for await (const blob of blobs) {
-          if (blob.name.startsWith(`${code}-`)) {
-              blobName = blob.name;
-              break;
-          }
-      }
-
-      if (!blobName) {
-          return res.status(404).json({ error: "File not found" });
-      }
-
-      // Generate the SAS URL for the file
-      const sasUrl = generateSASUrl(blobName);
-
-      // Ensure the SAS URL is using HTTPS
-      const secureSasUrl = sasUrl.replace('http://', 'https://');
-
-      // Fetch the file using the SAS URL
-      const fileResponse = await axios.get(secureSasUrl, { responseType: 'arraybuffer' });
-
-      // Set the headers to force download
-      res.setHeader('Content-Disposition', `attachment; filename="${blobName}"`);
-      res.setHeader('Content-Type', fileResponse.headers['content-type']); // Use the actual file content type
-
-      // Send the file as the response
-      res.send(fileResponse.data);
-  } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Failed to download file" });
-  }
-};
 
 
 // Export Multer middleware for file upload
