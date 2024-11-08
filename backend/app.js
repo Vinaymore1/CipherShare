@@ -11,7 +11,7 @@ const app = express();
 // Middleware to handle JSON requests
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:4173', // Replace this with your frontend URL
+    origin: 'https://cipher-share-12-git-main-vinaymore1s-projects.vercel.app', // Replace this with your frontend URL
     methods: 'POST, GET, PUT, DELETE, OPTIONS',
     allowedHeaders: 'Content-Type, Authorization',
 }));
