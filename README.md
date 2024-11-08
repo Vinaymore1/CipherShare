@@ -25,37 +25,40 @@
 1. **Clone the repository**
 ```bash
 git clone https://github.com/Vinaymore1/CipherShare.git
-
-
+```
 2. **Navigate to the project directory and install dependencies for the backend**
-bash
+``` bash
+
 cd CipherShare
 cd backend
 npm install
-
+```
 
 
 3. **Create the environment variables for the backend & update the .env file with your  credentials**
-bash
+```bash
 create .env
 AZURE_STORAGE_CONNECTION_STRING = "your string" 
 AZURE_STORAGE_CONTAINER_NAME = "container name "
-
+```
 
 4. **Start the backend server**
-bash
+```bash
 npm run dev
-
+```
 
 5. **In a new terminal, navigate to the frontend directory and install the dependencies**
-bash
+```bash
 cd ../frontend
 npm install
+```
 
-
-6. **Copy the environment variables for the frontend and update the lib/api file with the backend URL for CORS** 
-
+6. **Copy the environment variables for the frontend and update the src/lib/api file with the backend URL for CORS** 
+```bash
+UPDATE const BASE_URL
+```
 
 7. **Start the frontend development server**
-bash
+```bash
 npm run dev 
+```
